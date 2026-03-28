@@ -13,7 +13,7 @@ function App() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/essay/improve",
+        "https://guessgame-backend-1.onrender.com",
         { text}
       );
 
