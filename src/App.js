@@ -5,48 +5,62 @@ function App() {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [tone, setTone] = useState("Formal");
+
+  // ✅ FINAL API URL (LIVE BACKEND)
+  const API_URL = "https://essay-s4jr.onrender.com/api/essay/improve";
 
   const handleSubmit = async () => {
     if (!text) return;
 
     setLoading(true);
+
     try {
       const res = await axios.post(
-       "https://essay-s4jr.onrender.com/api/essay/improve",
-        { text}
+        API_URL,
+        { text },
+        {
+          timeout: 20000, // 🔥 important for Render cold start
+        }
       );
 
-      // ✅ FIXED JSON handling (important)
-    let data;
+      console.log("API RESPONSE:", res.data);
 
-try {
-  data =
-    typeof res.data === "string"
-      ? JSON.parse(res.data)
-      : res.data;
-} catch (e) {
-  console.log("Raw response:", res.data);
+      let data;
 
-  // Extract JSON manually from AI response
-  const jsonMatch = res.data.match(/\{[\s\S]*\}/);
+      try {
+        data =
+          typeof res.data === "string"
+            ? JSON.parse(res.data)
+            : res.data;
+      } catch (e) {
+        console.log("Raw response:", res.data);
 
-  if (jsonMatch) {
-    data = JSON.parse(jsonMatch[0]);
-  } else {
-    alert("Invalid AI response");
-    return;
-  }
-}
+        const jsonMatch = res.data.match(/\{[\s\S]*\}/);
 
-setResult(data);
+        if (jsonMatch) {
+          data = JSON.parse(jsonMatch[0]);
+        } else {
+          alert("❌ Invalid AI response");
+          return;
+        }
+      }
 
-      // Save history
+      setResult(data);
       localStorage.setItem("lastEssay", JSON.stringify(data));
+
     } catch (err) {
-      console.error(err);
-      alert("❌ Backend error or not running");
+      console.error("ERROR:", err);
+
+      // 🔥 BETTER ERROR MESSAGE
+      if (err.response) {
+        alert("❌ Server error: " + err.response.status);
+      } else if (err.request) {
+        alert("❌ Network error (backend not reachable)");
+      } else {
+        alert("❌ Unexpected error");
+      }
     }
+
     setLoading(false);
   };
 
@@ -57,7 +71,6 @@ setResult(data);
 
   return (
     <div style={styles.app}>
-      
       {/* HEADER */}
       <div style={styles.header}>
         <h2>EssayAI</h2>
@@ -79,17 +92,6 @@ setResult(data);
 
         <p style={styles.count}>{text.length} characters</p>
 
-        {/* TONE SELECTOR */}
-        <select
-          style={styles.select}
-          value={tone}
-          onChange={(e) => setTone(e.target.value)}
-        >
-          <option>Formal</option>
-          <option>Casual</option>
-          <option>Professional</option>
-        </select>
-
         {/* BUTTONS */}
         <div style={styles.buttons}>
           <button
@@ -99,12 +101,6 @@ setResult(data);
               ...styles.primaryBtn,
               opacity: !text || loading ? 0.6 : 1,
             }}
-            onMouseEnter={(e) =>
-              (e.target.style.transform = "scale(1.05)")
-            }
-            onMouseLeave={(e) =>
-              (e.target.style.transform = "scale(1)")
-            }
           >
             {loading
               ? "⚡ Improving your essay..."
@@ -148,7 +144,7 @@ setResult(data);
           <div style={{ ...styles.resultCard, ...styles.yellow }}>
             <h3>💡 Suggestions</h3>
             <ul>
-              {result.suggestions.map((s, i) => (
+              {result.suggestions?.map((s, i) => (
                 <li key={i}>• {s}</li>
               ))}
             </ul>
@@ -157,7 +153,6 @@ setResult(data);
           <div style={{ ...styles.resultCard, ...styles.purple }}>
             <h3>🎯 Score: {result.score}/100</h3>
 
-            {/* PROGRESS BAR */}
             <div style={styles.progressBar}>
               <div
                 style={{
@@ -173,7 +168,7 @@ setResult(data);
   );
 }
 
-/* 🎨 STYLES */
+/* 🎨 STYLES (same as yours) */
 const styles = {
   app: {
     minHeight: "100vh",
@@ -215,11 +210,6 @@ const styles = {
     fontSize: "12px",
     color: "gray",
   },
-  select: {
-    marginTop: "10px",
-    padding: "8px",
-    borderRadius: "8px",
-  },
   buttons: {
     display: "flex",
     gap: "10px",
@@ -234,7 +224,6 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
     background: "linear-gradient(90deg, #ff7eb3, #ff758c)",
-    transition: "0.3s",
   },
   secondaryBtn: {
     padding: "12px",
