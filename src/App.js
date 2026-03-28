@@ -13,7 +13,7 @@ function App() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "https://essay-s4jr.onrender.com/api/essay/improve",
+       "https://essay-s4jr.onrender.com/api/essay/improve",
         { text}
       );
 
