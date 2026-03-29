@@ -6,7 +6,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ FINAL API URL (LIVE BACKEND)
+  // ✅ LIVE BACKEND URL
   const API_URL = "https://essay-s4jr.onrender.com/api/essay/improve";
 
   const handleSubmit = async () => {
@@ -19,7 +19,7 @@ function App() {
         API_URL,
         { text },
         {
-          timeout: 20000, // 🔥 important for Render cold start
+          timeout: 60000, // 🔥 increased timeout for Render cold start
         }
       );
 
@@ -27,6 +27,7 @@ function App() {
 
       let data;
 
+      // ✅ SAFE JSON PARSING
       try {
         data =
           typeof res.data === "string"
@@ -51,13 +52,14 @@ function App() {
     } catch (err) {
       console.error("ERROR:", err);
 
-      // 🔥 BETTER ERROR MESSAGE
-      if (err.response) {
+      if (err.code === "ECONNABORTED") {
+        alert("⏳ Server is waking up... please try again in a few seconds.");
+      } else if (err.response) {
         alert("❌ Server error: " + err.response.status);
       } else if (err.request) {
-        alert("❌ Network error (backend not reachable)");
+        alert("❌ Network error (backend unreachable)");
       } else {
-        alert("❌ Unexpected error");
+        alert("❌ Unexpected error occurred");
       }
     }
 
@@ -103,7 +105,7 @@ function App() {
             }}
           >
             {loading
-              ? "⚡ Improving your essay..."
+              ? "⏳ Waking server... please wait (30–60s)"
               : "🚀 Improve Essay"}
           </button>
 
@@ -168,7 +170,7 @@ function App() {
   );
 }
 
-/* 🎨 STYLES (same as yours) */
+/* 🎨 STYLES */
 const styles = {
   app: {
     minHeight: "100vh",
