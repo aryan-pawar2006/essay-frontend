@@ -19,7 +19,7 @@ function App() {
         API_URL,
         { text },
         {
-          timeout: 60000, // 🔥 increased timeout for Render cold start
+          timeout: 100000, // 🔥 increased timeout for Render cold start
         }
       );
 
